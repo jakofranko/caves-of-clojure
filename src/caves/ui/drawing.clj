@@ -55,6 +55,15 @@
 
 (defn get-viewport-coords
   [game player-location vcols vrows]
+  (do
+    (println "DEBUG COORDS")
+    (println "player-location:" player-location)
+    (println "vcols/vrows:" vcols "/" vrows)
+    (let [[center-x center-y] player-location]
+      (do
+        (println "center-x/center-y:" center-x "/" center-y)
+        (println "vcols / 2:" (int (/ vcols 2)))
+        (println "vrows / 2:" (int (/ vrows 2))))))
   (let [[center-x center-y] player-location
         
         tiles (:tiles (:world game))
@@ -63,8 +72,11 @@
         map-cols (count (first tiles))
         
         ; define the top-left and bottom-right corners of the viewport
-        start-x (max 0 (- center-x (int (/ vcols 2))))
-        start-y (max 0 (- center-y (int (/ vrows 2))))
+        start-x (- center-x (int (/ vcols 2)))
+        start-x (max 0 start-x)
+
+        start-y (- center-y (int (/ vrows 2)))
+        start-y (max 0 start-y)
         
         end-x (+ start-x vcols)
         end-x (min end-x map-cols)

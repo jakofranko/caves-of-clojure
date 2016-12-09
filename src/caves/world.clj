@@ -100,7 +100,7 @@
 
 (defn find-empty-neighbor
   [world coord]
-  (let [candidates (filter #(empty? world %) (neighbors coord))]
+  (let [candidates (filter #(is-empty? world %) (neighbors coord))]
     (when (seq candidates)
       (rand-nth candidates))))
 
