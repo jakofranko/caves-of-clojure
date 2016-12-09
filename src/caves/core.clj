@@ -1,8 +1,8 @@
 (ns caves.core
   (:use [caves.ui.core :only [->UI]]
         [caves.ui.drawing :only [draw-game]]
-        [caves.ui.input :only [get-input process-input]]
-        [caves.entities.core :only [tick]])
+        [caves.entities.core :only [tick]]
+        [caves.ui.input :only [get-input process-input]])
   (:require [lanterna.screen :as s]))
 
 (defrecord Game [world uis input])
@@ -15,19 +15,14 @@
 
 (defn run-game [game screen]
   (loop [{:keys [input uis] :as game} game]
-    (when-not (empty? uis)
+    (when (seq uis)
       (draw-game game screen)
       (if (nil? input)
-        (recur (get-input (update-in game [:world]
-          tick-all) screen))
+        (recur (get-input (update-in game [:world] tick-all) screen))
         (recur (process-input (dissoc game :input) input))))))
 
 (defn new-game []
-  (assoc (->Game
-         nil
-         [(->UI :start)]
-         nil)
-    :location [40 20]))
+  (->Game nil [(->UI :start)] nil))
 
 (defn main 
   ([screen-type] (main screen-type false))

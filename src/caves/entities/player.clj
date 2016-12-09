@@ -31,6 +31,7 @@
        (set-tile-floor world dest))
   (can-dig? [this world dest]
             (check-tile world dest #{:wall})))
+
 (extend-type Player Attacker
   (attack [this world target]
           {:pre [(satisfies? Destructible target)]}
@@ -43,7 +44,7 @@
 
 (defn move-player
   [world dir]
-  (let [player (:player (:entities world))
+  (let [player (get-in world [:entities :player])
         target (destination-coords (:location player) dir)
         entity-at-target (get-entity-at world target)]
     (cond
