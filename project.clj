@@ -4,4 +4,5 @@
   :license {:name "MIT/X11"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [clojure-lanterna "0.9.0"]]
+  :profiles {:user {:plugins [[lein-kibit "0.1.3"]]}}
   :main caves.core)
