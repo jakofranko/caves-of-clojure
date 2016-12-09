@@ -55,15 +55,6 @@
 
 (defn get-viewport-coords
   [game player-location vcols vrows]
-  (do
-    (println "DEBUG COORDS")
-    (println "player-location:" player-location)
-    (println "vcols/vrows:" vcols "/" vrows)
-    (let [[center-x center-y] player-location]
-      (do
-        (println "center-x/center-y:" center-x "/" center-y)
-        (println "vcols / 2:" (int (/ vcols 2)))
-        (println "vrows / 2:" (int (/ vrows 2))))))
   (let [[center-x center-y] player-location
         
         tiles (:tiles (:world game))
