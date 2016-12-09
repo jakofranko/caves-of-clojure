@@ -15,7 +15,8 @@
 (defn grow [lichen world]
   (if-let [target (find-empty-neighbor world (:location lichen))]
     (let [new-lichen (make-lichen target)]
-      (assoc-in world [:entities (:id new-lichen)] new-lichen))))
+      (assoc-in world [:entities (:id new-lichen)] new-lichen))
+    world))
 
   (extend-type Lichen Entity
     (tick [this world]
