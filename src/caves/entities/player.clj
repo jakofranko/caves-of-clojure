@@ -1,5 +1,5 @@
 (ns caves.entities.player
-  (:use [caves.entities.core :only [Entity]]
+  (:use [caves.entities.core :only [Entity add-aspect]]
         [caves.entities.aspects.mobile :only [Mobile move can-move?]]
         [caves.entities.aspects.digger :only [Digger dig can-dig?]]
         [caves.entities.aspects.attacker :only [Attacker attack]]
@@ -18,28 +18,14 @@
   (tick [this world]
         world))
 
-(extend-type Player Mobile
-  (move [this world dest]
-        {:pre [(can-move? this world dest)]}
-        (assoc-in world [:entities :player :location] dest))
-  (can-move? [this world dest]
-             (is-empty? world dest)))
+(add-aspect Player Mobile)
 
-(extend-type Player Digger
-  (dig [this world dest]
-       {:pre [(can-dig? this world dest)]}
-       (set-tile-floor world dest))
-  (can-dig? [this world dest]
-            (check-tile world dest #{:wall})))
+(add-aspect Player Digger)
 
-(extend-type Player Attacker
-  (attack [this world target]
-          {:pre [(satisfies? Destructible target)]}
-          (let [damage 1]
-            (take-damage target world damage))))
+(add-aspect Player Attacker)
 
 (defn make-player 
-  [world location]
+  [location]
   (->Player :player "@" :white location))
 
 (defn move-player

@@ -1,5 +1,5 @@
 (ns caves.entities.lichen
-  (:use [caves.entities.core :only [Entity get-id]]
+  (:use [caves.entities.core :only [Entity get-id add-aspect]]
         [caves.world :only [find-empty-neighbor]]
         [caves.entities.aspects.destructible :only [Destructible take-damage]]))
 
@@ -18,15 +18,10 @@
       (assoc-in world [:entities (:id new-lichen)] new-lichen))
     world))
 
-  (extend-type Lichen Entity
-    (tick [this world]
-          (if (should-grow)
-            (grow this world)
-            world)))
+(extend-type Lichen Entity
+  (tick [this world]
+        (if (should-grow)
+          (grow this world)
+          world)))
   
-  (extend-type Lichen Destructible
-    (take-damage [{:keys [id] :as this} world damage]
-                 (let [damaged-this (update-in this [:hp] - damage)]
-                   (if-not (pos? (:hp damaged-this))
-                     (update-in world [:entities] dissoc id)
-                     (assoc-in world [:entities id] damaged-this)))))
+(add-aspect Lichen Destructible)

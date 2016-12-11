@@ -1,122 +1,127 @@
 (ns caves.ui.drawing
+  (:use [caves.utils :only (map2d shear)])
   (:require [lanterna.screen :as s]))
 
-(def screen-size [80 24])
+; Definitions -----------------------------------------------------------------
+(defmulti draw-ui
+  (fn [ui game screen]
+    (:kind ui)))
 
-; TODO: don't assume width and heights
-(defn clear-screen 
-  [screen]
-  (let [[cols rows] screen-size
-        blank (clojure.string/join (repeat cols \space))]
-    (doseq [row (range rows)]
-      (s/put-string screen 0 row blank))))
 
-(defn draw-world
-  [screen vrows vcols start-x start-y end-x end-y tiles]
-  ; Create a list of vectors [vrow-idx mrow-idx] such that
-  ; vrow-idx (vieport row index) is the location of the viewport y
-  ; and mrow-idx (map row index) is the corresponding y location on the map (world)
-  (doseq [[vrow-idx mrow-idx] (map vector
-                                   (range 0 vrows)        ; the height of the viewport
-                                   (range start-y end-y)) ; the location of the viewport
-          :let [row-tiles (subvec (tiles mrow-idx) start-x end-x)]]
-    (doseq [vcol-idx (range vcols)
-            :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
-      (s/put-string screen vcol-idx vrow-idx glyph {:fg color}))))
+; Start -----------------------------------------------------------------------
+(defmethod draw-ui :start [ui game screen]
+  (s/put-sheet screen 0 0
+               ["Welcome to the Caves of Clojure!"
+                ""
+                "Press any key to continue."]))
 
-(defn draw-crossharis
-  [screen vcols vrows]
-  (let [crosshair-x (int (/ vcols 2))
-        crosshair-y (int (/ vrows 2))]
-    (s/put-string screen crosshair-x crosshair-y "X" {:fg :red})
-    (s/move-cursor screen crosshair-x crosshair-y)))
 
-(defn draw-entity
-  [screen start-x start-y {:keys [location glyph color]}]
-  (let [[entity-x entity-y] location
-        x (- entity-x start-x)
-        y (- entity-y start-y)]
-    (s/put-string screen x y glyph {:fg color})))
+; Win -------------------------------------------------------------------------
+(defmethod draw-ui :win [ui game screen]
+  (s/put-sheet screen 0 0
+               ["Congratulations, you win!"
+                "Press escape to exit, anything else to restart."]))
 
-(defn highligh-player
-  [screen start-x start-y player]
-  (let [[player-x player-y] (:location player)
-        x (- player-x start-x)	; x and y position the player within the viewport
-        y (- player-y start-y)]
-    (s/move-cursor screen x y)))
 
-(defn draw-hud
-  [screen game start-x start-y]
-  (let [hud-row (dec (second screen-size))
-        [x y] (get-in game [:world :entities :player :location])
-        info (str "Loc: [" x "-" y "]")
-        info (str info " start: [" start-x "-" start-y "]")]
-    (s/put-string screen 0 hud-row info)))
+; Lose ------------------------------------------------------------------------
+(defmethod draw-ui :lose [ui game screen]
+  (s/put-sheet screen 0 0
+               ["Sorry, better luck next time."
+                "Press escape to exit, anything else to restart."]))
+
+
+; Play ------------------------------------------------------------------------
+;
+; The Play UI draws the world.  This is tricky, but hopefully not too bad.
+;
+; Imagine a 10 by 4 world with a 3 by 2 "viewport":
+;
+;  0123456789
+; 0...OVV....
+; 1...VVV....
+; 2...VVV....
+; 3..........
+; 4..........
+;
+; The V is the viewport, and the O is the "viewport origin", which would be
+; [3 0] in terms of the map's coordinates.
 
 (defn get-viewport-coords
+  "Find the top-left coordinates of the viewport in the overall map, centering on the player."
   [game player-location vcols vrows]
   (let [[center-x center-y] player-location
-        
+
         tiles (:tiles (:world game))
-        
+
         map-rows (count tiles)
         map-cols (count (first tiles))
-        
-        ; define the top-left and bottom-right corners of the viewport
+
         start-x (- center-x (int (/ vcols 2)))
         start-x (max 0 start-x)
 
         start-y (- center-y (int (/ vrows 2)))
         start-y (max 0 start-y)
-        
+
         end-x (+ start-x vcols)
         end-x (min end-x map-cols)
 
         end-y (+ start-y vrows)
         end-y (min end-y map-rows)
-        
+
         start-x (- end-x vcols)
         start-y (- end-y vrows)]
-    [start-x start-y end-x end-y]))
+    [start-x start-y]))
 
-(defmulti draw-ui
-  (fn [ui game screen]
-    (:kind ui)))
+(defn get-viewport-coords-of
+  "Get the viewport coordiates for the given real coords, given the viewport origin."
+  [origin coords]
+  (map - coords origin))
 
-(defmethod draw-ui :start 
-  [ui game screen]
-  (s/put-string screen 0 0 "Welcome to the Caves of Clojure!")
-  (s/put-string screen 0 1 "Press any key to continue")
-  (s/put-string screen 0 4 "Once in the game, press enter to win, and backspace to lose"))
 
-(defmethod draw-ui :play 
-  [ui game screen]
+(defn draw-hud [screen game [ox oy]]
+  (let [hud-row (dec (second (s/get-size screen)))
+        [x y] (get-in game [:world :entities :player :location])
+        info (str "player loc: [" x "-" y "]")
+        info (str info " viewport origin: [" ox "-" oy "]")]
+    (s/put-string screen 0 hud-row info)))
+
+
+(defn draw-entity [screen origin {:keys [location glyph color]}]
+  (let [[x y] (get-viewport-coords-of origin location)]
+    (s/put-string screen x y glyph {:fg color})))
+
+
+(defn draw-world [screen vrows vcols [ox oy] tiles]
+  (letfn [(render-tile [tile]
+            [(:glyph tile) {:fg (:color tile)}])]
+    (let [tiles (shear tiles ox oy vcols vrows)
+          sheet (map2d render-tile tiles)]
+      (s/put-sheet screen 0 0 sheet))))
+
+
+(defn highlight-player [screen origin player]
+  (let [[x y] (get-viewport-coords-of origin (:location player))]
+    (s/move-cursor screen x y)))
+
+
+(defmethod draw-ui :play [ui game screen]
   (let [world (:world game)
         {:keys [tiles entities]} world
         player (:player entities)
-        [cols rows] screen-size
-        vcols cols        ; vcols == "viewport columns"
-        vrows (dec rows)  ; vrows == "viewport rows". Save a row on the bottom for UI info
-        [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
-    (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        [cols rows] (s/get-size screen)
+        vcols cols
+        vrows (dec rows)
+        origin (get-viewport-coords game (:location player) vcols vrows)]
+    (draw-world screen vrows vcols origin tiles)
     (doseq [entity (vals entities)]
-      (draw-entity screen start-x start-y entity))
-    (draw-hud screen game start-x start-y)
-    (highligh-player screen start-x start-y player)))
+      (draw-entity screen origin entity))
+    (draw-hud screen game origin)
+    (highlight-player screen origin player)))
 
-(defmethod draw-ui :win 
-  [ui game screen]
-  (s/put-string screen 0 0 "Congratulations, you win!")
-  (s/put-string screen 0 1 "Press escape to exit, anything else to restart."))
 
-(defmethod draw-ui :lose 
-  [ui game screen]
-  (s/put-string screen 0 0 "Sorry, better luck next time.")
-  (s/put-string screen 0 1 "Press escape to exit, anything else to go."))
-
-(defn draw-game 
-  [game screen]
-  (clear-screen screen)
+; Entire Game -----------------------------------------------------------------
+(defn draw-game [game screen]
+  (s/clear screen)
   (doseq [ui (:uis game)]
     (draw-ui ui game screen))
   (s/redraw screen))
