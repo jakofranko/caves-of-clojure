@@ -1,5 +1,5 @@
 (ns caves.ui.drawing
-  (:use [caves.utils :only (map2d shear)])
+  (:use [caves.utils :only (map2d shear enumerate)])
   (:require [lanterna.screen :as s]))
 
 ; Definitions -----------------------------------------------------------------
@@ -78,7 +78,7 @@
   (map - coords origin))
 
 
-(defn draw-hud [screen game [ox oy]]
+(defn draw-hud [screen game]
   (let [hud-row (dec (second (s/get-size screen)))
         player (get-in game [:world :entities :player])
         {:keys [location hp max-hp]} player
@@ -91,9 +91,13 @@
   (doseq [[i msg] (enumerate messages)]
     (s/put-string screen 0 i msg {:fg :black :bg :white})))
 
-(defn draw-entity [screen origin {:keys [location glyph color]}]
-  (let [[x y] (get-viewport-coords-of origin location)]
-    (s/put-string screen x y glyph {:fg color})))
+(defn draw-entity [screen origin vrows vcols {:keys [location glyph color]}]
+  (let [[x y] (get-viewport-coords-of origin location)
+        max-x (dec vcols)
+        max-y (dec vrows)]
+    (when (and (<= 0 x max-x)
+               (<= 0 y max-y))
+      (s/put-string screen x y glyph {:fg color}))))
 
 
 (defn draw-world [screen vrows vcols [ox oy] tiles]
@@ -119,8 +123,8 @@
         origin (get-viewport-coords game (:location player) vcols vrows)]
     (draw-world screen vrows vcols origin tiles)
     (doseq [entity (vals entities)]
-      (draw-entity screen origin entity))
-    (draw-hud screen game origin)
+      (draw-entity screen origin vrows vcols entity))
+    (draw-hud screen game)
     (draw-messages screen (:messages player))
     (highlight-player screen origin player)))
 

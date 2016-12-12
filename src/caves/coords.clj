@@ -1,4 +1,5 @@
-(ns caves.coords)
+(ns caves.coords
+  (:use [caves.utils :only [abs]]))
 
 (def directions
   {:w  [-1 0]

@@ -4,6 +4,7 @@
         [caves.entities.aspects.digger :only [Digger dig can-dig?]]
         [caves.entities.aspects.attacker :only [Attacker attack]]
         [caves.entities.aspects.destructible :only [Destructible take-damage]]
+        [caves.entities.aspects.receiver :only [Receiver]]
         [caves.coords :only [destination-coords]]
         [caves.world :only [find-empty-tile get-tile-kind set-tile-floor get-entity-at is-empty?]]))
 
@@ -23,6 +24,8 @@
 (add-aspect Player Digger)
 
 (add-aspect Player Attacker)
+(add-aspect Player Destructible)
+(add-aspect Player Receiver)
 
 (defn make-player 
   [location]
@@ -41,7 +44,7 @@
         target (destination-coords (:location player) dir)
         entity-at-target (get-entity-at world target)]
     (cond
-      entity-at-target (attack player world entity-at-target)
-      (can-move? player world target) (move player world target)
-      (can-dig? player world target) (dig player world target)
+      entity-at-target (attack player entity-at-target world)
+      (can-move? player target world) (move player target world)
+      (can-dig? player target world) (dig player target world)
       :else world)))

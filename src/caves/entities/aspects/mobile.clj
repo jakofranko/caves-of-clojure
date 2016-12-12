@@ -4,7 +4,7 @@
 
 (defaspect Mobile
   (move [this dest world]
-    	{:pre [(can-move? this world dest)]}
-    	(assoc-in world [:entities (:id this) :location] dest))
+    {:pre [(can-move? this dest world)]}
+    (assoc-in world [:entities (:id this) :location] dest))
   (can-move? [this dest world]
-             (is-empty? world dest)))
+    (is-empty? world dest)))

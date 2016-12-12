@@ -5,7 +5,7 @@
 (def world-size [160 50])
 
 ; Data structures -------------------------------------------------------------
-(defrecord World [tiles])
+(defrecord World [tiles entities])
 (defrecord Tile [kind glyph color])
 
 (def tiles
@@ -71,7 +71,7 @@
 
 (defn random-world 
   []
-  (let [world (->World (random-tiles))
+  (let [world (->World (random-tiles) {})
        world (nth (iterate smooth-world world) 3)]
    world))
 
@@ -84,8 +84,7 @@
   (:kind (get-tile world coord)))
 
 (defn get-entity-at [world coord]
-  (first (filter #(= coord (:location %))
-                 (vals (:entities world)))))
+  (first (get-entities-at world coord)))
 
 (defn get-entities-around
   ([world coord] (get-entities-around world coord 1))
@@ -98,15 +97,13 @@
   (and (#{:floor} (get-tile-kind world coord))
        (not (get-entity-at world coord))))
 
-(defn find-empty-tile
-  [world]
+(defn find-empty-tile [world]
   (loop [coord (random-coordinate)]
-    (if (#{:floor} (get-tile-kind world coord))
+    (if (is-empty? world coord))
       coord
       (recur (random-coordinate)))))
 
-(defn find-empty-neighbor
-  [world coord]
+(defn find-empty-neighbor [world coord]
   (let [candidates (filter #(is-empty? world %) (neighbors coord))]
     (when (seq candidates)
       (rand-nth candidates))))

@@ -5,8 +5,11 @@
         [caves.ui.input :only [get-input process-input]])
   (:require [lanterna.screen :as s]))
 
+
+; Data Structures -------------------------------------------------------------
 (defrecord Game [world uis input])
 
+; Main ------------------------------------------------------------------------
 (defn tick-entity [world entity]
   (tick entity world))
 
@@ -16,10 +19,10 @@
 (defn clear-messages [game]
   (assoc-in game [:world :entities :player :messages] nil))
 
+
 (defn run-game [game screen]
   (loop [{:keys [input uis] :as game} game]
     (when (seq uis)
-      (draw-game game screen)
       (if (nil? input)
         (let [game (update-in game [:world] tick-all)
               _ (draw-game game screen)
@@ -30,7 +33,8 @@
 (defn new-game []
   (->Game nil [(->UI :start)] nil))
 
-(defn main 
+(defn main
+  ([] (main :swing false))
   ([screen-type] (main screen-type false))
   ([screen-type block?]
    (letfn [(go []
@@ -49,3 +53,10 @@
                       (args ":text")  :text
                       :else           :auto)]
     (main screen-type true)))
+
+
+
+(comment
+  (main :swing false)
+  (main :swing true)
+  )
