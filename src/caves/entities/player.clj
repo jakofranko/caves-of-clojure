@@ -7,7 +7,7 @@
         [caves.coords :only [destination-coords]]
         [caves.world :only [find-empty-tile get-tile-kind set-tile-floor get-entity-at is-empty?]]))
 
-(defrecord Player [id glyph color location])
+(defrecord Player [id name glyph color location hp max-hp])
 
 (defn check-tile
   "Check that the tile at the destination passes the given predicate."
@@ -26,7 +26,14 @@
 
 (defn make-player 
   [location]
-  (->Player :player "@" :white location))
+  (map->Player {:id :player 
+                :name "you"
+                :glyph "@" 
+                :color :white 
+                :location location
+                :hp 40
+                :max-hp 40
+                :attack 10}))
 
 (defn move-player
   [world dir]

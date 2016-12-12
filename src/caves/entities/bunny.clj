@@ -4,12 +4,12 @@
         [caves.entities.aspects.mobile :only [Mobile move can-move?]]
         [caves.world :only [find-empty-neighbor]]))
 
-(defrecord Bunny [id glyph color location hp])
+(defrecord Bunny [id name glyph color location hp max-hp])
 
 (extend-type Bunny Entity
   (tick [this world]
     (if-let [target (find-empty-neighbor world (:location this))]
-      (move this world target)
+      (move this target world)
       world)))
 
 (add-aspect Bunny Mobile)
@@ -17,4 +17,10 @@
 
 (defn make-bunny 
   [location]
-  (->Bunny (get-id) "v" :yellow location 1))
+  (map->Bunny {:id (get-id)
+               :name "bunny"
+               :glyph "v" 
+               :color :yellow 
+               :location location 
+               :hp 4
+               :max-hp 4}))

@@ -6,10 +6,17 @@
         [caves.coords :only [neighbors]]))
 
 
-(defrecord Silverfish [id glyph color location hp])
+(defrecord Silverfish [id name glyph color location hp max-hp])
 
 (defn make-silverfish [location]
-      (->Silverfish (get-id) "~" :white location 1))
+      (map->Silverfish {
+                        :id (get-id)
+                        :name "silverfish"
+                        :glyph "~" 
+                        :color :white 
+                        :location location 
+                        :hp 15 
+                        :max-hp 15}))
 
 
 (extend-type Silverfish Entity
@@ -17,10 +24,10 @@
     (let [target (rand-nth (neighbors (:location this)))]
       (if (get-entity-at world target)
         world
-        (move this world target)))))
+        (move this target world)))))
 
 (add-aspect Silverfish Mobile
-  (can-move? [this world dest]
+  (can-move? [this dest world]
     (not (get-entity-at world dest))))
 
 (add-aspect Silverfish Destructible)

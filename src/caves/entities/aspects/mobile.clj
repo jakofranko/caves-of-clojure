@@ -3,8 +3,8 @@
         [caves.entities.core :only [defaspect]]))
 
 (defaspect Mobile
-  (move [this world dest]
+  (move [this dest world]
     	{:pre [(can-move? this world dest)]}
     	(assoc-in world [:entities (:id this) :location] dest))
-  (can-move? [this world dest] 
+  (can-move? [this dest world]
              (is-empty? world dest)))

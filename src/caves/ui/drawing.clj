@@ -80,11 +80,16 @@
 
 (defn draw-hud [screen game [ox oy]]
   (let [hud-row (dec (second (s/get-size screen)))
-        [x y] (get-in game [:world :entities :player :location])
-        info (str "player loc: [" x "-" y "]")
-        info (str info " viewport origin: [" ox "-" oy "]")]
+        player (get-in game [:world :entities :player])
+        {:keys [location hp max-hp]} player
+        [x y] location
+        info (str "hp [" hp "/" max-hp "]")
+        info (str info " loc: [" x "-" y "]")]
     (s/put-string screen 0 hud-row info)))
 
+(defn draw-messages [screen messages]
+  (doseq [[i msg] (enumerate messages)]
+    (s/put-string screen 0 i msg {:fg :black :bg :white})))
 
 (defn draw-entity [screen origin {:keys [location glyph color]}]
   (let [[x y] (get-viewport-coords-of origin location)]
@@ -116,6 +121,7 @@
     (doseq [entity (vals entities)]
       (draw-entity screen origin entity))
     (draw-hud screen game origin)
+    (draw-messages screen (:messages player))
     (highlight-player screen origin player)))
 
 

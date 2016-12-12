@@ -29,3 +29,9 @@
   "Return the coordinates of all neighboring squares of the given coord."
   [origin]
   (map offset-coords (vals directions) (repeat origin)))
+
+(defn radial-distance
+  "Return the radial distance between two points."
+  [[x1 y1] [x2 y2]]
+  (max (abs (- x1 x2))
+       (abs (- y1 y2))))
