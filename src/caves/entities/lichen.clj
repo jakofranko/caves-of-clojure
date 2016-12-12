@@ -14,10 +14,10 @@
   (map->Lichen {
                 :id (get-id)
                 :name "lichen"
-                :glypn "F" 
-                :color :green 
-                :location location 
-                :hp 6 
+                :glyph "F"
+                :color :green
+                :location location
+                :hp 6
                 :max-hp 6}))
 
 (defn grow [{:keys [location]} world]

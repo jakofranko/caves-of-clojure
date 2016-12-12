@@ -83,6 +83,10 @@
   [world coord]
   (:kind (get-tile world coord)))
 
+(defn get-entities-at [world coord]
+  (filter #(= coord (:location %))
+          (vals (:entities world))))
+
 (defn get-entity-at [world coord]
   (first (get-entities-at world coord)))
 
@@ -99,7 +103,7 @@
 
 (defn find-empty-tile [world]
   (loop [coord (random-coordinate)]
-    (if (is-empty? world coord))
+    (if (is-empty? world coord)
       coord
       (recur (random-coordinate)))))
 

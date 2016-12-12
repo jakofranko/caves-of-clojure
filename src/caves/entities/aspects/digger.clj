@@ -3,8 +3,8 @@
         [caves.world :only [check-tile set-tile-floor]]))
 
 (defaspect Digger
-  (dig [this world dest]
-       {:pre [(can-dig? this world dest)]}
-       (set-tile-floor world dest))
-  (can-dig? [this world dest]
+  (dig [this dest world]
+       {:pre [(can-dig? this dest world)]}
+       (set-tile-floor dest world))
+  (can-dig? [this dest world]
             (check-tile world dest #{:wall})))
