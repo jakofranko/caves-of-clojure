@@ -1,23 +1,18 @@
 (ns caves.entities.player
   (:use [caves.entities.core :only [Entity add-aspect]]
+        [caves.entities.aspects.receiver :only [Receiver]]
         [caves.entities.aspects.mobile :only [Mobile move can-move?]]
         [caves.entities.aspects.digger :only [Digger dig can-dig?]]
         [caves.entities.aspects.attacker :only [Attacker attack]]
-        [caves.entities.aspects.destructible :only [Destructible take-damage]]
-        [caves.entities.aspects.receiver :only [Receiver]]
+        [caves.entities.aspects.destructible :only [Destructible]]
         [caves.coords :only [destination-coords]]
-        [caves.world.core :only [find-empty-tile get-tile-kind set-tile-floor get-entity-at is-empty?]]))
+        [caves.world.core :only [get-entity-at]]))
 
-(defrecord Player [id name glyph color location hp max-hp])
-
-(defn check-tile
-  "Check that the tile at the destination passes the given predicate."
-  [world dest pred]
-  (pred (get-tile-kind world dest)))
+(defrecord Player [id glyph color location hp max-hp attack name])
 
 (extend-type Player Entity
   (tick [this world]
-        world))
+    world))
 
 (add-aspect Player Mobile)
 (add-aspect Player Digger)
@@ -25,19 +20,17 @@
 (add-aspect Player Destructible)
 (add-aspect Player Receiver)
 
-(defn make-player 
-  [location]
-  (map->Player {:id :player 
+(defn make-player [location]
+  (map->Player {:id :player
                 :name "you"
-                :glyph "@" 
-                :color :white 
+                :glyph "@"
+                :color :white
                 :location location
                 :hp 40
                 :max-hp 40
                 :attack 10}))
 
-(defn move-player
-  [world dir]
+(defn move-player [world dir]
   (let [player (get-in world [:entities :player])
         target (destination-coords (:location player) dir)
         entity-at-target (get-entity-at world target)]

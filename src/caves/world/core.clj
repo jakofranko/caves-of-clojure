@@ -10,7 +10,9 @@
 
 (def tiles
   {:floor (->Tile :floor "." :white)
-   :wall (->Tile :wall "#" :white)
+   :wall  (->Tile :wall  "#" :white)
+   :up    (->Tile :up    "<" :white)
+   :down  (->Tile :down  ">" :white)
    :bound (->Tile :bound "X" :black)})
 
 ; Convenience functions -------------------------------------------------------
@@ -30,8 +32,7 @@
 (defn get-tile [world coord]
   (get-tile-from-tiles (:tiles world) coord))
 
-(defn get-tile-kind
-  [world coord]
+(defn get-tile-kind [world coord]
   (:kind (get-tile world coord)))
 
 (defn get-entities-at [world coord]
@@ -49,7 +50,7 @@
              (vals (:entities world)))))
 
 (defn is-empty? [world coord]
-  (and (#{:floor} (get-tile-kind world coord))
+  (and (tile-walkable? (get-tile world coord))
        (not (get-entity-at world coord))))
 
 (defn find-empty-tile [world]

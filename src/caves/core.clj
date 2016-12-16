@@ -26,7 +26,7 @@
       (recur (if input
                (-> game
                    (dissoc :input)
-                   (process-input game))
+                   (process-input input))
                (-> game
                    (update-in [:world] tick-all)
                    (draw-game screen)
@@ -63,5 +63,4 @@
 
 (comment
   (main :swing false)
-  (main :swing true)
-  )
+  (main :swing true))

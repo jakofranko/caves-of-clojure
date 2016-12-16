@@ -1,16 +1,17 @@
 (ns caves.world.generation
-  (:require [caves.entities.player :only [make-player]]
-        [caves.entities.lichen :only [make-lichen]]
-        [caves.entities.bunny :only [make-bunny]]
-        [caves.entities.silverfish :only [make-silverfish]]
-        [caves.world.core :only [tiles
-                                 get-tile-from-tiles
-                                 random-coordinate
-                                 world-size
-                                 ->World
-                                 tile-walkable?
-                                 find-empty-tile]]
-        [caves.coords :only [neighbors]]))
+  (:use [clojure.set :only (union difference)]
+        [caves.entities.player :only [make-player]]
+    	  [caves.entities.lichen :only [make-lichen]]
+    	  [caves.entities.bunny :only [make-bunny]]
+    	  [caves.entities.silverfish :only [make-silverfish]]
+    	  [caves.world.core :only [tiles
+    	                           get-tile-from-tiles
+    	                           random-coordinate
+    	                           world-size
+    	                           ->World
+    	                           tile-walkable?
+    	                           find-empty-tile]]
+    	  [caves.coords :only [neighbors]]))
 
 (def all-coords
   (let [[cols rows] world-size]
@@ -22,9 +23,9 @@
   (get-in level [y x] (:bound tiles)))
 
 (defn filter-walkable
-  "Filter the given coordinates to include only walkable ones"
+  "Filter the given coordinates to include only walkable ones."
   [level coords]
-  (set (filter #(tile-walkable? (get-tile-from-level %))
+  (set (filter #(tile-walkable? (get-tile-from-level level %))
                coords)))
 
 (defn walkable-neighbors
@@ -75,12 +76,11 @@
   (let [world (assoc-in world [:entities :player]
                         (make-player (find-empty-tile world)))]
     (-> world
-      (add-creatures make-lichen 30)
-      (add-creatures make-bunny 20)
-      (add-creatures make-silverfish 15))))
+        (add-creatures make-lichen 30)
+        (add-creatures make-bunny 20)
+        (add-creatures make-silverfish 15))))
 
-(defn random-tiles
-  []
+(defn random-tiles []
   (let [[cols rows] world-size]
     (letfn [(random-tile []
                          (tiles (rand-nth [:floor :wall])))
@@ -130,5 +130,5 @@
   (let [world (->World (random-tiles) {})
        world (nth (iterate smooth-world world) 3)
        world (populate-world world)
-       world (assoc world :regions (get-region-map) (:tiles world))]
+       world (assoc world :regions (get-region-map (:tiles world)))]
    world))
