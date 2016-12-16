@@ -6,7 +6,7 @@
         [caves.entities.aspects.destructible :only [Destructible take-damage]]
         [caves.entities.aspects.receiver :only [Receiver]]
         [caves.coords :only [destination-coords]]
-        [caves.world :only [find-empty-tile get-tile-kind set-tile-floor get-entity-at is-empty?]]))
+        [caves.world.core :only [find-empty-tile get-tile-kind set-tile-floor get-entity-at is-empty?]]))
 
 (defrecord Player [id name glyph color location hp max-hp])
 
@@ -20,9 +20,7 @@
         world))
 
 (add-aspect Player Mobile)
-
 (add-aspect Player Digger)
-
 (add-aspect Player Attacker)
 (add-aspect Player Destructible)
 (add-aspect Player Receiver)

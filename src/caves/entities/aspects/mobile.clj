@@ -1,5 +1,5 @@
 (ns caves.entities.aspects.mobile
-  (:use [caves.world :only [is-empty?]]
+  (:use [caves.world.core :only [is-empty?]]
         [caves.entities.core :only [defaspect]]))
 
 (defaspect Mobile

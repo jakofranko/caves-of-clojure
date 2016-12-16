@@ -1,8 +1,8 @@
 (ns caves.entities.lichen
   (:use [caves.entities.aspects.receiver :only [send-message-nearby]]
         [caves.entities.core :only [Entity get-id add-aspect]]
-        [caves.world :only [find-empty-neighbor]]
-        [caves.entities.aspects.destructible :only [Destructible take-damage]]))
+        [caves.world.core :only [find-empty-neighbor]]
+        [caves.entities.aspects.destructible :only [Destructible]]))
 
 (defrecord Lichen [id name glyph color location hp max-hp])
 

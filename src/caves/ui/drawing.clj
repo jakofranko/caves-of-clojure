@@ -77,6 +77,20 @@
   [origin coords]
   (map - coords origin))
 
+(defn draw-regions [screen region-map vrows vcols [ox oy]]
+  (letfn [(get-region-glyph [region-number]
+            (str
+              (nth
+                "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                region-number)))]
+    (doseq [x (range ox (+ ox vcols))
+            y (range oy (+ oy vrows))]
+      (let [region-number (region-map [x y])]
+        (when region-number
+          (s/put-string screen (- x ox) (- y oy)
+                        (get-region-glyph region-number)
+                        {:fg :blue}))))))
+
 
 (defn draw-hud [screen game]
   (let [hud-row (dec (second (s/get-size screen)))
@@ -115,13 +129,15 @@
 
 (defmethod draw-ui :play [ui game screen]
   (let [world (:world game)
-        {:keys [tiles entities]} world
+        {:keys [tiles entities regions]} world
         player (:player entities)
         [cols rows] (s/get-size screen)
         vcols cols
         vrows (dec rows)
         origin (get-viewport-coords game (:location player) vcols vrows)]
     (draw-world screen vrows vcols origin tiles)
+    (when (get-in game [:debug-flags :show-regions])
+      (draw-regions screen regions vrows vcols origin))
     (doseq [entity (vals entities)]
       (draw-entity screen origin vrows vcols entity))
     (draw-hud screen game)
@@ -134,4 +150,5 @@
   (s/clear screen)
   (doseq [ui (:uis game)]
     (draw-ui ui game screen))
-  (s/redraw screen))
+  (s/redraw screen)
+  game)

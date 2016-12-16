@@ -1,6 +1,6 @@
 (ns caves.entities.aspects.receiver
   (:use [caves.entities.core :only [defaspect]]
-        [caves.world :only [get-entities-around]]))
+        [caves.world.core :only [get-entities-around]]))
 
 (defaspect Receiver
   (receive-message [this message world]

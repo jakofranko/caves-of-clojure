@@ -1,39 +1,13 @@
 (ns caves.ui.input
-  (:use [caves.world :only [random-world smooth-world find-empty-tile]]
-        [caves.ui.core :only [->UI]]
-        [caves.entities.player :only [make-player move-player]]
-        [caves.entities.lichen :only [make-lichen]]
-        [caves.entities.bunny :only [make-bunny]]
-        [caves.entities.silverfish :only [make-silverfish]])
+  (:use [caves.world.generation :only [random-world smooth-world]]
+        [caves.entities.player :only [move-player]]
+        [caves.ui.core :only [->UI]])
   (:require [lanterna.screen :as s]))
 
-(defn move
-  [[x y] [dx dy]]
-  [(+ x dx) (+ y dy)])
-
-(defn add-creature [world make-creature]
-  (let [creature (make-creature (find-empty-tile world))]
-       (assoc-in world [:entities (:id creature)] creature)))
-
-(defn add-creatures [world make-creature n]
-  (nth (iterate #(add-creature % make-creature)
-                world)
-       n))
-
-(defn populate-world [world]
-  (let [world (assoc-in world [:entities :player]
-                        (make-player (find-empty-tile world)))]
-    (-> world
-      (add-creatures make-lichen 30)
-      (add-creatures make-bunny 20)
-      (add-creatures make-silverfish 15))))
-
-(defn reset-game
-  [game]
+(defn reset-game [game]
   (let [fresh-world (random-world)]
     (-> game
         (assoc :world fresh-world)
-        (update-in [:world] populate-world)
         (assoc :uis [(->UI :play)]))))
 
 (defmulti process-input
@@ -43,11 +17,12 @@
 (defmethod process-input :start [game input]
   (reset-game game))
 
+
 (defmethod process-input :play [game input]
   (case input
-    :enter      (assoc game :uis [(->UI :win)])
-    :backspace  (assoc game :uis [(->UI :lose)])
-    \q          (assoc game :uis [])
+    :enter     (assoc game :uis [(->UI :win)])
+    :backspace (assoc game :uis [(->UI :lose)])
+    \q         (assoc game :uis [])
 
     \h (update-in game [:world] move-player :w)
     \j (update-in game [:world] move-player :s)
@@ -57,6 +32,9 @@
     \u (update-in game [:world] move-player :ne)
     \b (update-in game [:world] move-player :sw)
     \n (update-in game [:world] move-player :se)
+    
+    ; Debug flags
+    \R (update-in game [:debug-flags :show-regions] not)
     
     game))
 
@@ -69,6 +47,7 @@
   (if (= input :escape)
     (assoc game :uis [])
     (assoc game :uis [(->UI :start)])))
+
 
 (defn get-input [game screen]
   (assoc game :input (s/get-key-blocking screen)))

@@ -7,7 +7,7 @@
 
 
 ; Data Structures -------------------------------------------------------------
-(defrecord Game [world uis input])
+(defrecord Game [world uis input debug-flags])
 
 ; Main ------------------------------------------------------------------------
 (defn tick-entity [world entity]
@@ -23,24 +23,30 @@
 (defn run-game [game screen]
   (loop [{:keys [input uis] :as game} game]
     (when (seq uis)
-      (if (nil? input)
-        (let [game (update-in game [:world] tick-all)
-              _ (draw-game game screen)
-              game (clear-messages game)]
-          (recur (get-input game screen)))
-        (recur (process-input (dissoc game :input) input))))))
+      (recur (if input
+               (-> game
+                   (dissoc :input)
+                   (process-input game))
+               (-> game
+                   (update-in [:world] tick-all)
+                   (draw-game screen)
+                   (clear-messages)
+                   (get-input screen)))))))
 
 (defn new-game []
-  (->Game nil [(->UI :start)] nil))
+  (map->Game {:world nil
+              :uis [(->UI :start)]
+              :input nil
+              :debug-flags {:show-regions false}}))
 
 (defn main
   ([] (main :swing false))
   ([screen-type] (main screen-type false))
   ([screen-type block?]
    (letfn [(go []
-               (let [screen (s/get-screen screen-type)]
-                 (s/in-screen screen
-                              (run-game (new-game) screen))))]
+             (let [screen (s/get-screen screen-type)]
+               (s/in-screen screen
+                            (run-game (new-game) screen))))]
      (if block?
        (go)
        (future (go))))))
@@ -53,7 +59,6 @@
                       (args ":text")  :text
                       :else           :auto)]
     (main screen-type true)))
-
 
 
 (comment

@@ -3,6 +3,7 @@
         [caves.entities.aspects.destructible :only [Destructible take-damage defense-value]]
         [caves.entities.core :only [defaspect]]))
 
+
 (declare get-damage)
 
 (defaspect Attacker
